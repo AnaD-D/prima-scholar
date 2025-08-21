@@ -20,7 +20,7 @@ check_docker() {
         exit 1
     fi
     
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker compose &> /dev/null; then
         echo -e "${RED}❌ Docker Compose is not installed. Please install Docker Compose first.${NC}"
         echo "Visit: https://docs.docker.com/compose/install/"
         exit 1
@@ -94,7 +94,7 @@ start_services() {
     
     # Build images
     echo "Building Docker images..."
-    docker-compose build --parallel
+    docker compose build --parallel
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Docker images built successfully${NC}"
@@ -105,7 +105,7 @@ start_services() {
     
     # Start services
     echo "Starting services..."
-    docker-compose up -d
+    docker compose up -d
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Services started successfully${NC}"
@@ -145,7 +145,7 @@ wait_for_services() {
     
     # Wait for Redis
     echo "Checking Redis health..."
-    if docker-compose exec redis redis-cli ping > /dev/null 2>&1; then
+    if docker compose exec redis redis-cli ping > /dev/null 2>&1; then
         echo -e "${GREEN}✅ Redis is ready${NC}"
     else
         echo -e "${YELLOW}⚠️  Redis health check failed, but may still be working${NC}"
@@ -164,10 +164,10 @@ display_info() {
     echo "   API Docs:  http://localhost:5000/docs"
     echo ""
     echo "🛠️ Useful commands:"
-    echo "   View logs:     docker-compose logs -f"
-    echo "   Stop services: docker-compose down"
-    echo "   Restart:       docker-compose restart"
-    echo "   Clean up:      docker-compose down -v"
+    echo "   View logs:     docker compose logs -f"
+    echo "   Stop services: docker compose down"
+    echo "   Restart:       docker compose restart"
+    echo "   Clean up:      docker compose down -v"
     echo ""
     echo "📚 Next steps:"
     echo "   1. Upload academic documents at http://localhost:3000"
@@ -219,7 +219,7 @@ main() {
         fi
         
     else
-        echo -e "${RED}❌ Setup failed. Check the logs with: docker-compose logs${NC}"
+        echo -e "${RED}❌ Setup failed. Check the logs with: docker compose logs${NC}"
         exit 1
     fi
 }
