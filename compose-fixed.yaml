@@ -1,0 +1,64 @@
+services:
+  # --- Redis ---
+  redis:
+    image: redis:7-alpine
+    container_name: prima-scholar-redis
+    command: redis-server --appendonly yes
+    ports: ["6379:6379"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # --- Backend API ---
+  prima-scholar-api:
+    build:
+      context: ./backend
+    container_name: prima-scholar-api
+    env_file: [".env"]
+    environment:
+      FLASK_ENV: production
+      REDIS_URL: redis://redis:6379
+      FLASK_APP: app.py
+    depends_on: ["redis"]
+    ports: ["5000:5000"]
+    volumes:
+      - ./backend:/app
+      - uploaded_documents:/app/uploads
+    restart: unless-stopped
+
+  # --- Frontend (React + Nginx interno) ---
+  prima-scholar-frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: /api
+    container_name: prima-scholar-frontend
+    depends_on: ["prima-scholar-api"]
+    ports: ["3000:80"]
+    restart: unless-stopped
+
+  # --- Nginx reverso (opcional; perfil production) ---
+  nginx:
+    image: nginx:alpine
+    container_name: prima-scholar-nginx
+    profiles: ["production"]
+    ports: ["80:80","443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on: ["prima-scholar-api","prima-scholar-frontend"]
+    restart: unless-stopped
+
+volumes:
+  redis_data: {}
+  uploaded_documents: {}
+
+# 👇 Personalizamos la red *default* con nombre fijo
+networks:
+  default:
+    name: prima-scholar-network
+    driver: bridge
